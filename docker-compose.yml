@@ -1,0 +1,36 @@
+services:
+  redis:
+    image: redis:7.2.4-alpine
+    env_file:
+      - .env
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - redis:/data
+      - ./buildfiles/redis.conf:/usr/local/etc/redis/redis.conf:ro
+  db:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: on-failure
+    ports:
+      - "5432:5432"
+  bot:
+    build:
+      context: .
+      dockerfile: buildfiles/Dockerfile
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - db
+      - redis
+
+
+volumes:
+  pgdata:
+  redis:
