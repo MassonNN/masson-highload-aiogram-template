@@ -9,6 +9,7 @@ from aiogram.fsm.storage.base import BaseStorage
 from dishka import make_async_container
 from dishka.integrations.aiogram import setup_dishka
 
+from ..worker.tkq import scheduler, schedule_source
 from ..bot.dispatcher import setup_dispatcher
 from ..configuration import Configuration
 from ..db.di import DatabaseProvider
@@ -35,6 +36,9 @@ async def start_bot():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
     logging.basicConfig(level=conf.logging_level)
+
+    await scheduler.startup()
+    await schedule_source.startup()
 
     await dp.start_polling(
         bot,

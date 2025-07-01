@@ -46,6 +46,13 @@ class RedisConfig:
 
 
 @dataclass
+class NATSConfig:
+    """Bot configuration."""
+
+    nats_uri: str = getenv("NATS_URI", "nats://nats:4222")
+
+
+@dataclass
 class BotConfig:
     """Bot configuration."""
 

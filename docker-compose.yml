@@ -1,5 +1,5 @@
 services:
-  redis:
+  redis:  # I very recommend to run redis without docker
     image: redis:7.2.4-alpine
     env_file:
       - .env
@@ -10,7 +10,8 @@ services:
     volumes:
       - redis:/data
       - ./buildfiles/redis.conf:/usr/local/etc/redis/redis.conf:ro
-  db:
+
+  db:  # I very recommend to run database without docker
     image: postgres:15-alpine
     env_file:
       - .env
@@ -19,18 +20,67 @@ services:
     restart: on-failure
     ports:
       - "5432:5432"
+
+  nats: # I very recommend to run nats without docker
+    image: nats
+    entrypoint: /nats-server
+    command: "-js -m 5555"
+    ports:
+      - "4222:4222"
+      - "5555:5555"
+    volumes:
+      - "js:/tmp/nats/jetstream"
+
   bot:
-    build:
-      context: .
-      dockerfile: buildfiles/Dockerfile
+    image: my_app:latest
     env_file:
       - .env
     restart: always
+    command: 'poetry run python -m src.bot'
+    depends_on:
+      db:
+        condition: service_started
+      nats:
+        condition: service_started
+      migrations:
+        condition: service_completed_successfully
+
+
+  worker:
+    image: my_app:latest
+    env_file:
+      - .env
+    restart: always
+    command: 'poetry run taskiq worker --workers 1 src.worker.tkq:broker src.worker.tasks'
+    depends_on:
+      nats:
+        condition: service_started
+      migrations:
+        condition: service_completed_successfully
+
+  scheduler:
+    image: my_app:latest
+    env_file:
+      - .env
+    restart: always
+    command: 'poetry run taskiq scheduler --update-interval 1 src.worker.tkq:scheduler src.worker.tasks'
+    depends_on:
+      nats:
+        condition: service_started
+      migrations:
+        condition: service_completed_successfully
+
+  migrations:
+    image: my_app:latest
+    env_file:
+      - .env
+    restart: no
+    command: 'poetry run alembic upgrade head'
     depends_on:
       - db
-      - redis
 
 
 volumes:
   pgdata:
   redis:
+  js:
