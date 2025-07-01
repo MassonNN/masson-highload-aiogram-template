@@ -1,4 +1,4 @@
-![template](https://user-images.githubusercontent.com/35528949/212500045-feb51ec0-e26a-45a6-bc8c-75d01379faf9.png)
+![template](https://github.com/user-attachments/assets/ca269ab5-095b-415e-893b-53e6a5d23632)
 ![](https://img.shields.io/badge/version-0.2.0%20-brightgreen)
 ![](https://img.shields.io/github/license/MassonNN/masson-aiogram-template)
 ![](https://img.shields.io/github/forks/MassonNn/masson-aiogram-template)
